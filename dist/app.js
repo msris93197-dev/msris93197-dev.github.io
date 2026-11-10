@@ -1,19 +1,96 @@
-const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-const art=document.querySelector('.system-art');
-const motion=document.querySelector('#motion-toggle');
-let paused=reducedMotion.matches;
-function updateMotion(){art.classList.toggle('paused',paused);motion.setAttribute('aria-pressed',String(paused));motion.textContent=paused?'Play motion ▷':'Pause motion Ⅱ';}
-updateMotion();motion.addEventListener('click',()=>{paused=!paused;updateMotion();});
-reducedMotion.addEventListener('change',event=>{paused=event.matches;updateMotion();});
-if('IntersectionObserver' in window&&!reducedMotion.matches){document.body.classList.add('js-motion');const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}}),{threshold:.1});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));}
-document.querySelector('.heatmap').replaceChildren(...Array.from({length:42},()=>document.createElement('i')));
-document.querySelectorAll('[data-filter]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-filter]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));let count=0;document.querySelectorAll('[data-category]').forEach(card=>{card.hidden=button.dataset.filter!=='all'&&card.dataset.category!==button.dataset.filter;if(!card.hidden)count++;});document.querySelector('#filter-status').textContent=`Showing ${count} ${count===1?'project':'projects'}`;}));
-const platformParts={
-  iam:{role:'BACKEND / SERVICE + DATA FOUNDATION',title:'IAM service & PostgreSQL',description:'Worked on the FastAPI IAM backend and designed the PostgreSQL foundation for accounts, subscriptions, payments, and licensing. Added versioned migrations, audit history, and retry-safe processing.',outcome:'Result: a configurable, auditable foundation for commercial product operations.',tags:['FastAPI','Python','PostgreSQL','Migrations'],steps:['API','DATA','AUDIT'],caption:'RELIABLE FOUNDATIONS'},
-  licensing:{role:'INTEGRATION / PRODUCT ACCESS + ENTITLEMENTS',title:'IAM–licensing integration',description:'Integrated identity and licensing workflows with plan-based feature and usage limits. Modeled online, offline, and dongle licensing, with activation records and entitlement checks across product and customer workflows.',outcome:'Result: product access connected to the customer’s purchased plan and license lifecycle.',tags:['IAM integration','Entitlements','Licensing','Feature limits'],steps:['PLAN','LICENSE','ACCESS'],caption:'FROM PURCHASE TO PRODUCT ACCESS'},
-  admin:{role:'COMPLETE OWNERSHIP / FRONTEND + BACKEND',title:'QAIG admin portal',description:'Independently built the Next.js/TypeScript portal from scratch, owning its frontend and server API layer. Delivered customer onboarding, subscriptions, licensing, and product configuration, with role-based permissions, concurrent-edit protection, and recovery from partial failures.',outcome:'Result: developer-assisted operations became secure self-service workflows for admins.',tags:['Next.js','React','TypeScript','Server APIs','Keycloak'],steps:['ONBOARD','MANAGE','RENEW'],caption:'ONE WORKSPACE FOR OPERATIONS'},
-  website:{role:'FRONTEND CONTRIBUTIONS / INTEGRATION + DELIVERY',title:'Organisation website & deployment',description:'Resolved roughly 60–70 QA-reported frontend issues to improve functionality and UI consistency. Supported VPS deployment and integration of the website, admin portal, and IAM backend, and documented server setup and deployment steps for the team.',outcome:'Result: a more consistent web experience and a documented path to deploy and maintain the platform.',tags:['Frontend','QA fixes','VPS deployment','Documentation'],steps:['BUILD','VERIFY','DEPLOY'],caption:'FROM INTERFACE TO RELEASE'}
-};
-function showPlatformPart(key, highlight=true){const part=platformParts[key];document.querySelectorAll('[data-platform]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.platform===key)));document.querySelectorAll('[data-part]').forEach(node=>node.classList.toggle('active-part',highlight&&node.dataset.part===key));for(const field of ['role','title','description','outcome'])document.querySelector(`#platform-${field}`).textContent=part[field];document.querySelector('#platform-tags').replaceChildren(...part.tags.map(tag=>{const span=document.createElement('span');span.textContent=tag;return span;}));document.querySelector('.art-diagram').replaceChildren(...part.steps.flatMap((step,index)=>{const span=document.createElement('span');span.textContent=step;if(index===0)return [span];const arrow=document.createElement('b');arrow.textContent='→';return [arrow,span];}));document.querySelector('#contribution-art p').textContent=part.caption;document.querySelector('#contribution-art').dataset.current=key;}
-document.querySelectorAll('[data-platform]').forEach(button=>button.addEventListener('click',()=>showPlatformPart(button.dataset.platform)));
-showPlatformPart('iam', false);
+(() => {
+  const doc = document.documentElement;
+  doc.classList.add("js");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Footer year
+  const year = document.getElementById("year");
+  if (year) year.textContent = new Date().getFullYear();
+
+  // Nav: border on scroll
+  const nav = document.querySelector(".nav");
+  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  // Mobile menu
+  const menuBtn = document.querySelector(".menu-btn");
+  const links = document.getElementById("nav-links");
+  const setMenu = (open) => {
+    links.classList.toggle("open", open);
+    menuBtn.setAttribute("aria-expanded", String(open));
+    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  menuBtn.addEventListener("click", () => setMenu(!links.classList.contains("open")));
+  links.addEventListener("click", (e) => { if (e.target.closest("a")) setMenu(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
+
+  // Active section highlight
+  const navLinks = [...links.querySelectorAll("a")];
+  const sections = navLinks.map((a) => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  if ("IntersectionObserver" in window) {
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        navLinks.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + entry.target.id));
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    sections.forEach((s) => spy.observe(s));
+  }
+
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll(".reveal");
+  if (!reduced && "IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) { entry.target.classList.add("in"); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+    revealEls.forEach((el) => io.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add("in"));
+  }
+
+  // Count-up stats
+  const counters = document.querySelectorAll("[data-count]");
+  if (!reduced && "IntersectionObserver" in window) {
+    const countIO = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const end = Number(el.dataset.count);
+        const suffix = el.dataset.suffix || "";
+        const start = performance.now();
+        const dur = 1100;
+        const tick = (now) => {
+          const p = Math.min((now - start) / dur, 1);
+          el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))) + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        countIO.unobserve(el);
+      });
+    }, { threshold: 0.6 });
+    counters.forEach((c) => countIO.observe(c));
+  }
+
+  // Copy email
+  const copyBtn = document.getElementById("copy-email");
+  const toast = document.querySelector(".toast");
+  let toastTimer;
+  const showToast = (msg) => {
+    toast.textContent = msg;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.hidden = true; }, 2200);
+  };
+  copyBtn?.addEventListener("click", async () => {
+    const email = copyBtn.dataset.email;
+    try {
+      await navigator.clipboard.writeText(email);
+      showToast("Email copied ✓");
+    } catch {
+      showToast(email);
+    }
+  });
+})();
