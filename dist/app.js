@@ -99,6 +99,50 @@
   /* ---------- Pause SVG (SMIL) animations for reduced motion ---------- */
   if (reduced) document.querySelectorAll("svg").forEach((s) => s.pauseAnimations && s.pauseAnimations());
 
+  /* ---------- Experience: card ↔ system-map highlighting ---------- */
+  document.querySelectorAll(".track").forEach((track) => {
+    const map = track.querySelector(".map");
+    if (!map) return;
+    const parts = map.querySelectorAll("[data-part]");
+    const cards = track.querySelectorAll(".xcard");
+    let pinned = null;
+    const show = (card) => {
+      if (!card) {
+        map.classList.remove("focusing");
+        parts.forEach((p) => p.classList.remove("on"));
+        cards.forEach((c) => c.classList.remove("is-on"));
+        return;
+      }
+      const wanted = (card.dataset.parts || "").split(/\s+/);
+      map.classList.add("focusing");
+      parts.forEach((p) => p.classList.toggle("on", wanted.includes(p.dataset.part)));
+      cards.forEach((c) => c.classList.toggle("is-on", c === card));
+    };
+    cards.forEach((card) => {
+      card.addEventListener("mouseenter", () => show(card));
+      card.addEventListener("mouseleave", () => show(pinned));
+      card.addEventListener("focus", () => show(card));
+      card.addEventListener("blur", () => show(pinned));
+      card.addEventListener("click", () => {
+        pinned = pinned === card ? null : card;
+        show(pinned);
+      });
+    });
+  });
+
+  /* ---------- Compose email (opens visitor's mail app) ---------- */
+  const compose = document.getElementById("compose");
+  compose?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const data = new FormData(compose);
+    const name = String(data.get("name") || "").trim();
+    const company = String(data.get("company") || "").trim();
+    const message = String(data.get("message") || "").trim();
+    const subject = `Opportunity for Srikanth${company ? " — " + company : ""}`;
+    const body = `${message}\n\n— ${name}${company ? "\n" + company : ""}`;
+    window.location.href = `mailto:mangipudisrikanth03@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
+
   /* ---------- Copy email ---------- */
   const copyBtn = document.getElementById("copy-email");
   const toast = document.querySelector(".toast");
