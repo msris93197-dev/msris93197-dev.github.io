@@ -11,7 +11,7 @@
     const dark = theme === "dark";
     toggle.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
     toggle.setAttribute("aria-pressed", String(dark));
-    if (metaTheme) metaTheme.setAttribute("content", dark ? "#0e1624" : "#f7f8fa");
+    if (metaTheme) metaTheme.setAttribute("content", dark ? "#090909" : "#f7f8fa");
   };
   applyTheme(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
   toggle.addEventListener("click", () => {
@@ -27,6 +27,9 @@
     if (!saved) applyTheme(e.matches ? "dark" : "light");
   });
 
+  document.querySelector('.guide-float')?.addEventListener('click', () => {
+    document.getElementById('navigation-guide')?.focus({ preventScroll: true });
+  });
   /* ---------- Footer year ---------- */
   const year = document.getElementById("year");
   if (year) year.textContent = new Date().getFullYear();
