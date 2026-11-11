@@ -11,7 +11,7 @@
     const dark = theme === "dark";
     toggle.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
     toggle.setAttribute("aria-pressed", String(dark));
-    if (metaTheme) metaTheme.setAttribute("content", dark ? "#121815" : "#f5f4ee");
+    if (metaTheme) metaTheme.setAttribute("content", dark ? "#0e1624" : "#f7f8fa");
   };
   applyTheme(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
   toggle.addEventListener("click", () => {
