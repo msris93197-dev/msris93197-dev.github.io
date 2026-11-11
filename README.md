@@ -9,7 +9,7 @@ dist/
   app.js            # mobile menu, active nav, scroll reveals, stat counters, copy email
   favicon.svg
   assets/
-    Srikanth_Mangipudi_Resume.pdf   # linked from nav, hero, resume section and contact
+    Srikanth_Mangipudi_Resume.pdf   
 .github/workflows/pages.yml         # auto-deploys dist/ to GitHub Pages on every push to main
 vercel.json                         # optional: deploy the same dist/ on Vercel instead
 ```
