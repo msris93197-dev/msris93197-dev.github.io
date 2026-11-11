@@ -615,3 +615,62 @@ svg.ic { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-wid
   .stream, .fork, .grow-line { stroke-dashoffset: 0; }
   .js .reveal { opacity: 1; transform: none; }
 }
+
+/* =========================================================
+   Illustration system — icon nodes on a flowing path
+   Palette tuned per theme: soft pastel fills on paper,
+   deep muted fills at night; one warm accent for motion.
+   ========================================================= */
+:root {
+  --il-line: #b4bfb2;
+  --il-ink: #24463f;
+  --il-accent: #c8603f;
+  --il-1: #d9e8d0;   /* sage */
+  --il-2: #f5dfd1;   /* peach */
+  --il-3: #dde4f2;   /* periwinkle */
+  --il-4: #f0e6cc;   /* sand */
+  --il-dot: rgba(24, 46, 43, .09);
+}
+:root[data-theme="dark"] {
+  --il-line: #4a5a52;
+  --il-ink: #d6e7da;
+  --il-accent: #e3936f;
+  --il-1: #2b4134;
+  --il-2: #4a3128;
+  --il-3: #2c3448;
+  --il-4: #433b26;
+  --il-dot: rgba(235, 231, 220, .07);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --il-line: #4a5a52; --il-ink: #d6e7da; --il-accent: #e3936f;
+    --il-1: #2b4134; --il-2: #4a3128; --il-3: #2c3448; --il-4: #433b26; --il-dot: rgba(235, 231, 220, .07);
+  }
+}
+.map, #map-b, #map-v, .p-ill, .up-ill, .pillar-art,
+.p-ill.pn-pantrix, .p-ill.pn-tomi, .p-ill.pn-bridge, .p-ill.pn-cadence, .up-ill.pn-2, .up-ill.pn-3, .up-ill.pn-4 {
+  background-color: var(--surface);
+  background-image: radial-gradient(var(--il-dot) 1.2px, transparent 1.4px);
+  background-size: 18px 18px;
+}
+.p-ill { padding: 26px 18px 14px; }
+.up-ill { padding: 22px 12px 10px; }
+.pillar-art { padding: 14px 6px 4px; border: 1px solid var(--line); }
+.map { padding: 18px 18px 14px; }
+
+.il1 { fill: var(--il-1); } .il2 { fill: var(--il-2); } .il3 { fill: var(--il-3); } .il4 { fill: var(--il-4); }
+.halo { fill: none; stroke-width: 1.5; opacity: .75; }
+.hz1 { stroke: var(--il-1); } .hz2 { stroke: var(--il-2); } .hz3 { stroke: var(--il-3); } .hz4 { stroke: var(--il-4); }
+.halo.ring-acc { stroke: var(--il-accent); opacity: .55; stroke-dasharray: 3 4; transform-box: fill-box; transform-origin: center; animation: spin 14s linear infinite; }
+.ic-il { fill: none; stroke: var(--il-ink); stroke-linecap: round; stroke-linejoin: round; }
+.ic-knight { font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif; fill: var(--il-ink); }
+.flowline { fill: none; stroke: var(--il-line); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: .5 8; animation: dash 1.2s linear infinite; }
+.flow-done { stroke: var(--il-ink); stroke-dasharray: none; animation: none; opacity: .7; }
+.dot-acc { fill: var(--il-accent); }
+.badge { fill: var(--il-accent); }
+.badge-t { font: 700 10px "DM Sans", sans-serif; fill: var(--accent-ink); }
+.t-cap { font: 500 10px "JetBrains Mono", monospace; letter-spacing: .14em; fill: var(--soft-ink); }
+.pane { fill: var(--il-3); stroke: var(--il-ink); stroke-opacity: .25; opacity: .85; }
+.nd-dim { opacity: .5; }
+.nd { transition: transform .3s ease; transform-box: fill-box; transform-origin: center; }
+.map [data-part].on .nd { transform: scale(1.06); }
