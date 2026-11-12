@@ -1,0 +1,176 @@
+/* ==========================================================================
+   Motion layer. GSAP owns transforms/opacity while it animates, so CSS
+   transitions on those properties are switched off until an element settles.
+   ========================================================================== */
+
+/* ---------- Failsafe: never leave content hidden if scripts don't run ---------- */
+html.js:not(.motion-ready) .reveal { animation: reveal-failsafe .01s 2.5s forwards; }
+@keyframes reveal-failsafe { to { opacity: 1; transform: none; } }
+
+/* ---------- Hand-off between CSS and GSAP ---------- */
+.gsap-motion .reveal,
+.gsap-motion .hero .reveal,
+.gsap-motion .pass,
+.gsap-motion .company,
+.gsap-motion .resume-frame { transition: none; }
+.gsap-motion .btn,
+.gsap-motion .guide-float,
+.gsap-motion .theme-toggle { transition-property: background-color, border-color, color, box-shadow; }
+.gsap-motion .btn:hover,
+.gsap-motion .guide-float:hover { transform: none; }
+
+/* Hover feel returns once a card has landed (snappier than the 0.7s default). */
+.gsap-motion .pillar.in,
+.gsap-motion .project.in,
+.gsap-motion .up.in { transition: transform .5s cubic-bezier(.2, .8, .2, 1), box-shadow .5s, background-color .35s; }
+.gsap-motion .xcard.in { transition: transform .4s cubic-bezier(.2, .8, .2, 1), border-color .25s, box-shadow .25s, background-color .35s; }
+.gsap-motion .edu.in { transition: background-color .35s, box-shadow .35s; }
+.gsap-motion .resume-frame.in { transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+
+/* Masked word / character reveals */
+.sw { display: inline-block; overflow: hidden; vertical-align: top; padding: 0 .04em .14em; margin: 0 -.04em -.14em; }
+.sw-i, .sc { display: inline-block; will-change: transform; }
+/* Mask spans must not pick up heading rules such as `.sec-head h2 span`. */
+.sec-head h2 :is(.sw, .sw-i, .sc), .resume-copy h2 :is(.sw, .sw-i, .sc) { color: inherit; }
+
+/* Journey line is drawn by GSAP through a custom property */
+.gsap-motion .journey::before { transform: scaleX(var(--jp, 1)); transform-origin: left center; }
+
+/* GSAP drives the tech strip (speed + lean follow scroll velocity) */
+.gsap-motion .strip-track { animation: none; will-change: transform; }
+
+/* Lazy animation: loops pause while their illustration is off-screen */
+.is-offscreen, .is-offscreen * { animation-play-state: paused !important; }
+
+/* ---------- Reading progress ---------- */
+.reading-progress { position: fixed; top: 0; left: 0; width: 100%; height: 3px; transform: scaleX(0); transform-origin: left; z-index: 200; pointer-events: none;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--ink))); }
+
+/* ---------- Header ---------- */
+.gsap-motion .nav { will-change: transform; }
+.nav-links.has-ink { position: relative; }
+.nav-links.has-ink a::after { display: none; }
+.nav-ink { position: absolute; left: 0; bottom: 2px; width: 0; height: 2px; border-radius: 2px; background: var(--accent); opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* ---------- Profile card: tilt light ---------- */
+.gsap-motion .pass { transform-style: preserve-3d; will-change: transform; }
+.pass-glare { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; opacity: 0; transition: opacity .5s;
+  background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), color-mix(in srgb, var(--paper) 55%, transparent), transparent 60%);
+  mix-blend-mode: soft-light; }
+:root[data-theme="dark"] .pass-glare { background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%); mix-blend-mode: normal; }
+.pass.is-tilting .pass-glare { opacity: 1; }
+
+/* ---------- First-visit intro (≈1.8s, once per session) ---------- */
+.intro-loader { display: none; }
+html.intro-on { overflow: hidden; }
+html.intro-on .intro-loader {
+  position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center;
+  background: var(--green); color: var(--on-green); clip-path: inset(0 0 0 0);
+  animation: intro-failsafe .4s 4.5s forwards;
+}
+@keyframes intro-failsafe { to { opacity: 0; visibility: hidden; } }
+.il-inner { display: grid; justify-items: center; gap: 22px; }
+.il-mark { display: flex; overflow: hidden; padding-bottom: .08em; font: 800 clamp(64px, 11vw, 120px)/1 "Manrope", sans-serif; letter-spacing: -.07em; }
+.il-ch { display: inline-block; }
+.il-ch.il-dot { color: var(--accent); }
+:root:not([data-theme="dark"]) .il-ch.il-dot { color: #f1b49b; }
+.il-meta { display: grid; grid-template-columns: 180px auto; align-items: center; gap: 14px; font: 500 11px "JetBrains Mono", monospace; letter-spacing: .14em; color: var(--on-green-2); }
+.il-bar { height: 2px; background: color-mix(in srgb, var(--on-green) 18%, transparent); overflow: hidden; border-radius: 2px; }
+.il-bar i { display: block; height: 100%; background: var(--on-green); transform: scaleX(0); transform-origin: left; }
+
+/* ---------- Lazy résumé preview ---------- */
+.pdf-slot { position: relative; height: 640px; background: var(--surface); }
+.pdf-slot object { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity .6s ease; }
+.pdf-slot.is-loaded object { opacity: 1; }
+.pdf-skeleton { position: absolute; inset: 0; display: grid; align-content: start; gap: 12px; padding: 44px 40px; }
+.pdf-skeleton i { display: block; height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--paper-2) 25%, color-mix(in srgb, var(--paper-2) 40%, var(--surface)) 50%, var(--paper-2) 75%); background-size: 300% 100%; animation: skeleton 1.4s ease-in-out infinite; }
+.pdf-skeleton i:nth-child(1) { width: 46%; height: 18px; margin-bottom: 8px; }
+.pdf-skeleton i:nth-child(2) { width: 72%; }
+.pdf-skeleton i:nth-child(3) { width: 30%; margin-bottom: 18px; }
+.pdf-skeleton i:nth-child(4n) { width: 88%; } .pdf-skeleton i:nth-child(4n+1) { width: 94%; } .pdf-skeleton i:nth-child(4n+2) { width: 64%; }
+.pdf-slot.is-loaded .pdf-skeleton { opacity: 0; transition: opacity .4s .3s; }
+@keyframes skeleton { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+/* ---------- Motion control ---------- */
+.motion-control { background: none; border: 1px solid var(--line); border-radius: 20px; font-size: 11px; padding: 6px 12px; color: var(--muted); }
+.motion-control:hover { border-color: var(--accent); color: var(--ink); }
+.motion-paused *, .motion-paused *::before, .motion-paused *::after { animation-play-state: paused !important; }
+
+/* ---------- PTZ demo controls ---------- */
+.ptz-targets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.ptz-targets button { padding: 7px 9px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); font-size: 11px; min-height: 36px; }
+.ptz-targets button[aria-pressed="true"] { border-color: var(--accent); color: var(--green-ink); background: var(--sage); }
+.ptz-controls button { min-height: 38px; } .ptz-controls button[data-ptz="stop"] { font-weight: 700; }
+.ptz-range { fill: var(--il-1); opacity: .5; } .ptz-route { fill: none; stroke: var(--il-line); stroke-width: 1.5; stroke-dasharray: 3 5; marker-end: url(#scene-arrow); }
+.ptz-ground { fill: var(--paper-2); stroke: var(--line); }
+.ptz-car-body { fill: var(--il-3); stroke: var(--il-ink); stroke-width: 1.4; stroke-linejoin: round; }
+.ptz-packet { fill: var(--accent); } #ptz-target.locked rect { stroke-dasharray: none; stroke-width: 2.5; }
+.ptz-person-shape { fill: var(--il-ink); }
+
+@media (max-width: 980px) { .pdf-slot { height: 560px; } }
+@media (max-width: 640px) { .pdf-slot { height: 460px; } .il-meta { grid-template-columns: 120px auto; } }
+@media (max-width: 600px) { .motion-control { min-height: 36px; } .ptz-targets button { min-height: 40px; } }
+@media (prefers-reduced-motion: reduce) {
+  .reading-progress, .motion-control { display: none; }
+  html.intro-on { overflow: auto; } html.intro-on .intro-loader { display: none; }
+  .pdf-skeleton i { animation: none; }
+}
+html:not(.js) .pdf-slot object { opacity: 1; }
+html:not(.js) .pdf-skeleton { display: none; }
+
+/* ---------- Nav: gliding pill + active marker ---------- */
+.nav-pill { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 0; border-radius: 999px; pointer-events: none; opacity: 0; visibility: hidden;
+  background: color-mix(in srgb, var(--accent) 13%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent); }
+.nav-links.has-ink a { z-index: 1; transition: color .3s ease; }
+.nav-ink { height: 3px; bottom: 1px; border-radius: 3px; }
+
+/* ---------- Buttons: liquid fill from the pointer ---------- */
+.btn.has-fill { position: relative; }
+.btn.has-fill, .guide-float.has-fill { overflow: hidden; isolation: isolate; transition: color .35s ease, border-color .35s ease, background-color .35s ease; }
+.btn-fill { position: absolute; left: 0; top: 0; z-index: -1; border-radius: 50%; pointer-events: none; background: var(--fill, var(--btn-hover)); }
+.has-fill.btn-primary { --fill: var(--btn-hover); }
+.has-fill.btn-primary:hover { background: var(--btn-bg); }
+.has-fill.btn-ghost { --fill: var(--ink); }
+.has-fill.btn-ghost:hover { background: transparent; color: var(--paper); }
+.has-fill.btn-outline { --fill: #f5f4ee; }
+.has-fill.btn-outline:hover { color: #173f3a; border-color: #f5f4ee; }
+.guide-float.has-fill { --fill: var(--accent); }
+.guide-float.has-fill:hover { color: var(--accent-ink); border-color: var(--accent); }
+.has-fill svg { position: relative; }
+/* Social links: underline draws in from the left */
+.socials a { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: color .3s, background-size .45s cubic-bezier(.2, .8, .2, 1); }
+.socials a:hover { background-size: 100% 1px; }
+
+/* ---------- Profile card tilt ---------- */
+.pass-wrap { min-width: 0; perspective: 1200px; }
+/* Profile card: crisp edge, no grey halo. A hairline border and a tight
+   contact shadow only, so it reads as a precise object rather than a glow. */
+.pass, .gsap-motion .pass { box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent); border-color: color-mix(in srgb, var(--ink) 12%, transparent); }
+:root[data-theme="dark"] .pass { box-shadow: none; border-color: color-mix(in srgb, var(--ink) 14%, transparent); }
+.pass-glare { transition: opacity .6s ease; }
+@media (max-width: 1140px) { .pass-wrap { max-width: 560px; width: 100%; } }
+
+/* ---------- Theme switch ---------- */
+/* View Transitions: the new theme spreads as a circle from the toggle. */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { z-index: 2; }
+.theme-vt *:not(.tt-thumb):not(.tt-thumb svg), .theme-vt *::before, .theme-vt *::after { transition: none !important; }
+/* Fallback: one calm colour cross-fade across the page. */
+.theme-fade, .theme-fade *, .theme-fade *::before, .theme-fade *::after {
+  transition: background-color .55s ease, color .55s ease, border-color .55s ease, fill .55s ease, stroke .55s ease, box-shadow .55s ease !important; }
+/* Toggle: springier thumb, icons cross-rotate. */
+.tt-thumb { transition: transform .55s cubic-bezier(.34, 1.56, .64, 1), background-color .4s, color .4s !important; }
+.tt-thumb svg { transition: opacity .35s ease, transform .55s cubic-bezier(.34, 1.56, .64, 1) !important; }
+
+/* Feathered theme reveal: a soft 140px edge instead of a hard circle. */
+.theme-vt-soft::view-transition-new(root) {
+  -webkit-mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), #000 calc(var(--vt-r) - 140px), transparent var(--vt-r));
+          mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), #000 calc(var(--vt-r) - 140px), transparent var(--vt-r));
+}
+
+/* The new view starts fully hidden, so nothing flashes before the reveal begins. */
+.theme-vt:not(.theme-vt-soft)::view-transition-new(root) { clip-path: circle(0px at var(--vt-x) var(--vt-y)); }
+::view-transition-group(root) { animation-duration: 0s; }
+
+/* Quick guide stays a floating button in the corner. */
+.guide-float, .guide-float.has-fill { position: fixed; }

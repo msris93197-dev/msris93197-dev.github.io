@@ -17,7 +17,14 @@
     if (t !== "light" && t !== "dark") {
       t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
-    document.documentElement.setAttribute("data-theme", t);
+    var d = document.documentElement;
+    d.setAttribute("data-theme", t);
+    d.classList.add("js");
+    // Short branded intro: first visit of a session only, never with reduced motion or a deep link.
+    try {
+      if (!sessionStorage.getItem("introSeen") && !location.hash &&
+          !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) d.classList.add("intro-on");
+    } catch (e) {}
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,9 +32,22 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="refined.css">
+<link rel="stylesheet" href="motion.css">
+<link rel="stylesheet" href="cursor.css">
+<script src="vendor/gsap.min.js" defer></script>
+<script src="vendor/ScrollTrigger.min.js" defer></script>
 <script src="app.js" defer></script>
+<script src="motion.js" defer></script>
+<script src="cursor.js" defer></script>
 </head>
 <body>
+<div class="intro-loader" aria-hidden="true">
+  <div class="il-inner">
+    <span class="il-mark"><span class="il-ch">s</span><span class="il-ch">m</span><span class="il-ch il-dot">.</span></span>
+    <span class="il-meta"><span class="il-bar"><i></i></span><span><span class="il-count">000</span> · LOADING PORTFOLIO</span></span>
+  </div>
+</div>
+<div class="reading-progress" aria-hidden="true"></div>
 <a class="skip" href="#main">Skip to content</a>
 
 <!-- ======================= HEADER ======================= -->
@@ -88,6 +108,7 @@
   </div>
 
   <!-- Developer pass: who, at a glance -->
+  <div class="pass-wrap">
   <aside class="pass reveal" aria-label="Profile summary card">
     <div class="pass-main">
       <div class="pass-head">
@@ -112,10 +133,11 @@
     </div>
     <div class="pass-stub">
       <span class="stub-status"><i></i>OPEN TO WORK</span>
-      <a class="resume-qr" href="https://msris93197-dev.github.io/assets/Srikanth_Mangipudi_Resume.pdf" target="_blank" rel="noopener" aria-label="Open resume PDF. Scan the QR code on another device."><img src="assets/resume-qr.svg" alt="QR code linking to Srikanth's resume PDF" width="116" height="116"><span>Scan for resume ↗</span></a>
+      <a class="barcode resume-barcode" href="assets/Srikanth_Mangipudi_Resume.pdf" target="_blank" rel="noopener" aria-label="Open resume PDF" title="Open resume PDF"><span class="sr-only">Open resume PDF</span></a>
       <span class="stub-gate">SDE · FULL-STACK</span>
     </div>
   </aside>
+  </div>
 </section>
 
 <!-- ======================= QUICK GUIDE ======================= -->
@@ -266,7 +288,7 @@
       </div>
       <div class="track-body">
         <figure class="map reveal" id="map-a" aria-label="Diagram of the commercial platform: three apps, one API layer, Keycloak sign-in, PostgreSQL, Razorpay and the delivery pipeline">
-          <figcaption><span>HOW IT FLOWS</span><span class="map-hint">Architecture overview</span></figcaption><svg class="engineering-viz detailed-viz" viewBox="0 0 400 430" role="img" aria-label="Commercial platform: web applications connect to FastAPI services, identity, data and payments"><defs><marker id="arrow-map-a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto-start-reverse"><path d="M0 0L7 3.5L0 7" fill="var(--il-line)"/></marker></defs><text x="18" y="24" class="viz-caption">ONE PLATFORM. THREE EXPERIENCES.</text><g data-part="site"><rect x="18" y="43" width="112" height="65" rx="8" class="viz-panel"/><path d="M18 66H130" class="viz-wire"/><text x="28" y="59" class="viz-label">Website</text><circle cx="118" cy="55" r="2" class="viz-cell"/><text x="28" y="84" class="viz-subtle">Browse &amp; buy</text></g><g data-part="dash"><rect x="144" y="43" width="112" height="65" rx="8" class="viz-panel"/><path d="M144 66H256" class="viz-wire"/><text x="154" y="59" class="viz-label">Customer portal</text><circle cx="244" cy="55" r="2" class="viz-cell"/><text x="154" y="84" class="viz-subtle">Account &amp; access</text></g><g data-part="admin"><rect x="270" y="43" width="112" height="65" rx="8" class="viz-panel"/><path d="M270 66H382" class="viz-wire"/><text x="280" y="59" class="viz-label">Admin portal</text><circle cx="370" cy="55" r="2" class="viz-cell"/><text x="280" y="84" class="viz-subtle">Provision &amp; manage</text></g><path d="M74 108V128H200V150" class="viz-wire" marker-end="url(#arrow-map-a)"/><path d="M326 108V128H200" class="viz-wire" marker-end="url(#arrow-map-a)"/><path d="M200 108V128" class="viz-wire"/><text x="215" y="142" class="viz-micro">Authenticated requests</text><g data-part="api"><rect x="48" y="155" width="304" height="78" rx="8" class="viz-panel"/><text x="64" y="177" class="viz-heading">FastAPI service layer</text><text x="64" y="199" class="viz-label">Accounts · subscriptions · product access</text><text x="64" y="218" class="viz-subtle">Plan limits · software licensing</text></g><path d="M200 233V258H76V277" class="viz-wire" marker-end="url(#arrow-map-a)"/><path d="M200 258V277" class="viz-wire" marker-end="url(#arrow-map-a)"/><path d="M200 258H324V277" class="viz-wire" marker-end="url(#arrow-map-a)"/><g data-part="sso"><rect x="18" y="282" width="112" height="76" rx="8" class="viz-panel"/><text x="28" y="303" class="viz-heading">Keycloak</text><text x="28" y="323" class="viz-label">Verify identity</text><text x="28" y="342" class="viz-subtle">Roles &amp; sessions</text></g><g data-part="db"><rect x="144" y="282" width="112" height="76" rx="8" class="viz-panel"/><text x="154" y="303" class="viz-heading">PostgreSQL</text><text x="154" y="323" class="viz-label">Product catalog</text><text x="154" y="342" class="viz-subtle">Plans &amp; audit</text></g><g data-part="pay"><rect x="270" y="282" width="112" height="76" rx="8" class="viz-panel"/><text x="280" y="303" class="viz-heading">Razorpay</text><text x="280" y="323" class="viz-label">Checkout</text><text x="280" y="342" class="viz-subtle">Subscriptions</text></g><g data-part="ci"><rect x="18" y="378" width="364" height="34" rx="8" class="viz-panel"/><text x="31" y="400" class="viz-label">GitHub Actions → Linux / Nginx → application releases</text></g></svg>
+          <figcaption><span>HOW IT FLOWS</span><span class="map-hint">Architecture overview</span></figcaption><svg class="engineering-viz detailed-viz" viewBox="0 0 400 430" role="img" aria-label="Commercial platform: web applications connect to FastAPI services, identity, data and payments"><defs><marker id="arrow-map-a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto-start-reverse"><path d="M0 0L7 3.5L0 7" fill="var(--il-line)"/></marker></defs><text x="18" y="24" class="viz-caption">ONE PLATFORM. THREE EXPERIENCES.</text><g data-part="site"><rect x="18" y="43" width="112" height="65" rx="8" class="viz-panel"/><path d="M18 66H130" class="viz-wire"/><text x="28" y="59" class="viz-label">Website</text><circle cx="118" cy="55" r="2" class="viz-cell"/><text x="28" y="84" class="viz-subtle">Browse &amp; buy</text></g><g data-part="dash"><rect x="144" y="43" width="112" height="65" rx="8" class="viz-panel"/><path d="M144 66H256" class="viz-wire"/><text x="154" y="59" class="viz-label">Customer portal</text><circle cx="244" cy="55" r="2" class="viz-cell"/><text x="154" y="84" class="viz-subtle">Account &amp; access</text></g><g data-part="admin"><rect x="270" y="43" width="112" height="65" rx="8" class="viz-panel"/><path d="M270 66H382" class="viz-wire"/><text x="280" y="59" class="viz-label">Admin portal</text><circle cx="370" cy="55" r="2" class="viz-cell"/><text x="280" y="84" class="viz-subtle">Provision &amp; manage</text></g><path d="M74 108V118Q74 128 84 128H200" class="viz-wire"/><path d="M326 108V118Q326 128 316 128H200" class="viz-wire"/><path d="M200 108V150" class="viz-wire" marker-end="url(#arrow-map-a)"/><circle cx="200" cy="128" r="3.2" class="viz-hub"/><path d="M211 137.5h7v5.5h-7zM212.6 137.5v-1.8a1.9 1.9 0 013.8 0v1.8" class="viz-lock"/><text x="223" y="143" class="viz-micro">Authenticated requests</text><circle r="2.6" class="viz-packet"><animateMotion dur="2.8s" repeatCount="indefinite" path="M74 108V118Q74 128 84 128H190Q200 128 200 138V150"/></circle><circle r="2.6" class="viz-packet"><animateMotion dur="2.8s" begin="-0.9s" repeatCount="indefinite" path="M326 108V118Q326 128 316 128H210Q200 128 200 138V150"/></circle><circle r="2.6" class="viz-packet"><animateMotion dur="2s" begin="-1.6s" repeatCount="indefinite" path="M200 108V150"/></circle><g data-part="api"><rect x="48" y="155" width="304" height="78" rx="8" class="viz-panel"/><text x="64" y="177" class="viz-heading">FastAPI service layer</text><text x="64" y="199" class="viz-label">Accounts · subscriptions · product access</text><text x="64" y="218" class="viz-subtle">Plan limits · software licensing</text></g><path d="M200 233V277" class="viz-wire" marker-end="url(#arrow-map-a)"/><path d="M200 246Q200 256 190 256H84Q74 256 74 266V277" class="viz-wire" marker-end="url(#arrow-map-a)"/><path d="M200 246Q200 256 210 256H316Q326 256 326 266V277" class="viz-wire" marker-end="url(#arrow-map-a)"/><circle r="2.6" class="viz-packet"><animateMotion dur="2.6s" begin="-0.4s" repeatCount="indefinite" path="M200 233V246Q200 256 190 256H84Q74 256 74 266V277"/></circle><circle r="2.6" class="viz-packet"><animateMotion dur="2.6s" begin="-1.3s" repeatCount="indefinite" path="M200 233V246Q200 256 210 256H316Q326 256 326 266V277"/></circle><circle r="2.6" class="viz-packet"><animateMotion dur="1.8s" begin="-2s" repeatCount="indefinite" path="M200 233V277"/></circle><path d="M74 358V378M200 358V378M326 358V378" class="viz-wire viz-dotted"/><g data-part="sso"><rect x="18" y="282" width="112" height="76" rx="8" class="viz-panel"/><text x="28" y="303" class="viz-heading">Keycloak</text><text x="28" y="323" class="viz-label">Verify identity</text><text x="28" y="342" class="viz-subtle">Roles &amp; sessions</text></g><g data-part="db"><rect x="144" y="282" width="112" height="76" rx="8" class="viz-panel"/><text x="154" y="303" class="viz-heading">PostgreSQL</text><text x="154" y="323" class="viz-label">Product catalog</text><text x="154" y="342" class="viz-subtle">Plans &amp; audit</text></g><g data-part="pay"><rect x="270" y="282" width="112" height="76" rx="8" class="viz-panel"/><text x="280" y="303" class="viz-heading">Razorpay</text><text x="280" y="323" class="viz-label">Checkout</text><text x="280" y="342" class="viz-subtle">Subscriptions</text></g><g data-part="ci"><rect x="18" y="378" width="364" height="34" rx="8" class="viz-panel"/><text x="31" y="400" class="viz-label">GitHub Actions → Linux / Nginx → application releases</text></g></svg>
         </figure>
 
         <div class="cards">
@@ -304,11 +326,12 @@
       <div class="track-head reveal">
         <span class="track-tag">TRACK B</span>
         <h3>Scientific &amp; device software</h3>
-        <p>Tools researchers use to simulate networks, capture live measurements and control lab hardware.</p>
+        <p>Tools researchers use to simulate networks, monitor and plot live measurements in real time, and control lab hardware.</p>
       </div>
       <div class="track-body">
         <figure class="map reveal" id="map-b" aria-label="Diagram: a network simulator fed by a Python engine over gRPC, a Qt app with separate acquisition and UI threads, and an Electron app controlling a USB device">
-          <figcaption><span>HOW IT FLOWS</span><span class="map-hint">Architecture overview</span></figcaption><svg class="engineering-viz detailed-viz" viewBox="0 0 400 430" role="img" aria-label="Three separate applications: network simulation, live measurement and instrument control"><defs><marker id="arrow-map-b" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto-start-reverse"><path d="M0 0L7 3.5L0 7" fill="var(--il-line)"/></marker></defs><text x="18" y="24" class="viz-caption">THREE APPLICATIONS. DISTINCT DATA FLOWS.</text><g data-part="sim"><rect x="18" y="42" width="364" height="111" rx="8" class="viz-panel"/><text x="31" y="63" class="viz-caption">01 / NETWORK SIMULATION</text><rect x="32" y="76" width="128" height="57" rx="8" class="viz-panel"/><path d="M32 99H160" class="viz-wire"/><text x="42" y="92" class="viz-label">React network editor</text><circle cx="148" cy="88" r="2" class="viz-cell"/><path d="M45 117L74 104L104 119L145 106" class="viz-chart"/><path d="M169 107H220" class="viz-wire" marker-end="url(#arrow-map-b)"/><text x="178" y="92" class="viz-micro">gRPC</text><rect x="228" y="76" width="139" height="57" rx="8" class="viz-panel"/><text x="240" y="99" class="viz-label">Python simulation</text><text x="240" y="119" class="viz-subtle">Stream results to UI</text></g><g data-part="qt"><rect x="18" y="167" width="364" height="111" rx="8" class="viz-panel"/><text x="31" y="188" class="viz-caption">02 / LIVE MEASUREMENT</text><rect x="32" y="201" width="128" height="57" rx="8" class="viz-panel"/><text x="44" y="222" class="viz-label">Acquisition worker</text><text x="44" y="242" class="viz-subtle">Hardware data</text><path d="M169 232H220" class="viz-wire" marker-end="url(#arrow-map-b)"/><text x="173" y="216" class="viz-micro">Updates</text><rect x="228" y="201" width="139" height="57" rx="8" class="viz-panel"/><path d="M228 224H367" class="viz-wire"/><text x="238" y="217" class="viz-label">Qt dashboard</text><circle cx="355" cy="213" r="2" class="viz-cell"/><path d="M241 246L257 240L269 246L279 233L287 248L304 239L320 242L349 233" class="viz-chart"/></g><g data-part="dev"><rect x="18" y="292" width="364" height="111" rx="8" class="viz-panel"/><text x="31" y="313" class="viz-caption">03 / INSTRUMENT CONTROL</text><rect x="32" y="326" width="128" height="57" rx="8" class="viz-panel"/><path d="M32 349H160" class="viz-wire"/><text x="42" y="342" class="viz-label">Electron controls</text><circle cx="148" cy="338" r="2" class="viz-cell"/><text x="44" y="368" class="viz-subtle">Queue → command</text><path d="M169 352H220" class="viz-wire" marker-end="url(#arrow-map-b)"/><text x="179" y="338" class="viz-micro">Serial</text><rect x="228" y="326" width="139" height="57" rx="8" class="viz-panel"/><text x="240" y="348" class="viz-label">USB instrument</text><text x="240" y="369" class="viz-subtle">Reconnect &amp; sync</text></g><text x="20" y="423" class="viz-subtle">Acquisition runs separately from UI rendering.</text></svg>
+          <figcaption><span>HOW IT FLOWS</span><span class="map-hint">hover a card →</span></figcaption>
+          <svg viewBox="0 0 400 396" aria-hidden="true"><g data-part="sim"><text x="16" y="26" class="t-cap">NETWORK SIMULATOR</text><path d="M80 74 H320" class="flowline"/><circle r="4.5" class="dot-acc"><animateMotion dur="2.6s" repeatCount="indefinite" path="M80 74 H320"/></circle><g class="nd"><circle cx="80" cy="74" r="33" class="halo hz4"/><circle cx="80" cy="74" r="26" class="il4"/><g class="ic-il" transform="translate(67.7 61.7) scale(1.029)" stroke-width="1.94"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9l3 3-3 3M12.5 15H17"/></g><text x="80" y="120" class="t-lbl" text-anchor="middle"><tspan x="80" dy="0">Python engine</tspan></text></g><g class="nd"><circle cx="200" cy="74" r="33" class="halo hz1"/><circle cx="200" cy="74" r="26" class="il1"/><g class="ic-il" transform="translate(187.7 61.7) scale(1.029)" stroke-width="1.94"><path d="M2 12h4l2.5-6 4 12 3-9 2 3H22"/></g><text x="200" y="120" class="t-lbl" text-anchor="middle"><tspan x="200" dy="0">gRPC stream</tspan></text></g><g class="nd"><circle cx="320" cy="74" r="33" class="halo hz3 ring-acc"/><circle cx="320" cy="74" r="26" class="il3"/><g class="ic-il" transform="translate(307.6 61.7) scale(1.029)" stroke-width="1.94"><circle cx="5" cy="7" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><path d="M7.2 7.3l9.6-1.1M6.2 9l4.6 7.2M17.8 8l-4.6 8"/></g><text x="320" y="120" class="t-lbl" text-anchor="middle"><tspan x="320" dy="0">Simulator UI</tspan></text></g></g><g data-part="qt"><text x="16" y="156" class="t-cap">QT LAB MODULES · ×11</text><path d="M80 204 H320" class="flowline"/><circle r="4.5" class="dot-acc"><animateMotion dur="2.6s" repeatCount="indefinite" path="M80 204 H320"/></circle><g class="nd"><circle cx="80" cy="204" r="33" class="halo hz4"/><circle cx="80" cy="204" r="26" class="il4"/><g class="ic-il" transform="translate(67.7 191.7) scale(1.029)" stroke-width="1.94"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></g><text x="80" y="250" class="t-lbl" text-anchor="middle"><tspan x="80" dy="0">Instrument</tspan></text></g><g class="nd"><circle cx="200" cy="204" r="33" class="halo hz1"/><circle cx="200" cy="204" r="26" class="il1"/><g class="ic-il" transform="translate(187.7 191.7) scale(1.029)" stroke-width="1.94"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></g><text x="200" y="250" class="t-lbl" text-anchor="middle"><tspan x="200" dy="0">Data thread</tspan></text></g><g class="nd"><circle cx="320" cy="204" r="33" class="halo hz3 ring-acc"/><circle cx="320" cy="204" r="26" class="il3"/><g class="ic-il" transform="translate(307.6 191.7) scale(1.029)" stroke-width="1.94"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M6.5 12l3-3 2 2 4-4 2 2"/></g><text x="320" y="250" class="t-lbl" text-anchor="middle"><tspan x="320" dy="0">Live UI</tspan></text></g></g><g data-part="dev"><text x="16" y="286" class="t-cap">DEVICE CONTROL</text><path d="M80 334 H320" class="flowline"/><circle r="4.5" class="dot-acc"><animateMotion dur="2.6s" repeatCount="indefinite" path="M80 334 H320"/></circle><g class="nd"><circle cx="80" cy="334" r="33" class="halo hz3"/><circle cx="80" cy="334" r="26" class="il3"/><g class="ic-il" transform="translate(67.7 321.6) scale(1.029)" stroke-width="1.94"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(120 12 12)"/></g><text x="80" y="380" class="t-lbl" text-anchor="middle"><tspan x="80" dy="0">Electron app</tspan></text></g><g class="nd"><circle cx="200" cy="334" r="33" class="halo hz1"/><circle cx="200" cy="334" r="26" class="il1"/><g class="ic-il" transform="translate(187.7 321.6) scale(1.029)" stroke-width="1.94"><rect x="4" y="4" width="16" height="4" rx="1.2"/><rect x="4" y="10" width="16" height="4" rx="1.2"/><rect x="4" y="16" width="16" height="4" rx="1.2"/></g><text x="200" y="380" class="t-lbl" text-anchor="middle"><tspan x="200" dy="0">Command queue</tspan></text></g><g class="nd"><circle cx="320" cy="334" r="33" class="halo hz2 ring-acc"/><circle cx="320" cy="334" r="26" class="il2"/><g class="ic-il" transform="translate(307.6 321.6) scale(1.029)" stroke-width="1.94"><path d="M9 2v5M15 2v5M7 7h10v4a5 5 0 0 1-10 0zM12 16v6"/></g><text x="320" y="380" class="t-lbl" text-anchor="middle"><tspan x="320" dy="0">Device ↻ resync</tspan></text></g></g></svg>
         </figure>
 
         <div class="cards">
@@ -318,9 +341,10 @@
             <div class="tags"><span>React</span><span>TypeScript</span><span>Cytoscape.js</span><span>gRPC</span></div>
           </article>
           <article class="xcard reveal" tabindex="0" data-parts="qt">
-            <div class="xcard-top"><h4>Python/Qt lab modules</h4><span class="metric">11 modules · solo</span></div>
-            <p>Independently delivered 11 Python/Qt modules. <b>Threaded acquisition is kept separate from the UI</b>, to keep the interface responsive. Added offline simulation, statistical validation and Windows releases.</p>
-            <div class="tags"><span>Python</span><span>Qt</span><span>Multithreading</span></div>
+            <div class="xcard-top"><h4>Python/Qt lab modules</h4><span class="metric">11 modules · live data</span></div>
+            <p>Independently delivered 11 Python/Qt modules for <b>real-time data monitoring and live plotting</b>. <b>Acquisition runs on its own thread</b>, so streaming plots stay smooth while the interface stays responsive. Added offline simulation, statistical validation and Windows releases.</p>
+            <div class="tags"><span>Python</span><span>Qt</span><span>Real-time plotting</span>
+<span>Multithreading</span></div>
           </article>
           <article class="xcard reveal" tabindex="0" data-parts="dev">
             <div class="xcard-top"><h4>Device-control desktop app</h4><span class="metric">USB · self-healing</span></div>
@@ -346,7 +370,66 @@
     <div class="track" data-map="map-v">
       <div class="track-body">
         <figure class="map reveal" id="map-v" aria-label="Diagram: a target point in a camera scene becomes authenticated pan, tilt and zoom commands through a C++ service and Kafka queues">
-          <figcaption><span>HOW IT FLOWS</span><span class="map-hint">Architecture overview</span></figcaption><svg class="engineering-viz detailed-viz" viewBox="0 0 400 430" role="img" aria-label="Camera targeting illustration: a scene selection becomes authenticated PTZ commands through C++ and Kafka"><defs><marker id="arrow-map-v" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto-start-reverse"><path d="M0 0L7 3.5L0 7" fill="var(--il-line)"/></marker></defs><text x="18" y="24" class="viz-caption">FROM A SCENE POINT TO CAMERA MOVEMENT</text><g data-part="ptz"><rect x="18" y="43" width="364" height="163" rx="8" class="viz-panel"/><path d="M18 66H382" class="viz-wire"/><text x="28" y="59" class="viz-label">Live scene / selected target</text><circle cx="370" cy="55" r="2" class="viz-cell"/><path d="M33 166L91 132L142 159L207 101L275 146L365 119V190H33Z" fill="var(--il-3)"/><path d="M42 188V161H75V188M88 188V146H120V188M139 188V166H168V188M290 188V147H329V188" class="viz-wire"/><rect x="222" y="97" width="56" height="58" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="5 3"/><path d="M250 113V139M237 126H263" class="viz-chart"/><text x="219" y="86" class="viz-subtle">Selected target</text><path d="M76 96H139L149 123H67Z" fill="var(--il-3)" stroke="var(--il-line)"/><ellipse cx="109" cy="125" rx="35" ry="18" class="viz-panel"/><circle cx="116" cy="129" r="10" class="viz-cell"/><path d="M109 146V166M90 166H128" class="viz-chart"/><path d="M149 123L222 97M149 137L222 155" class="viz-wire" stroke-dasharray="3 4"/><text x="31" y="85" class="viz-subtle">PTZ camera</text></g><path d="M200 206V235" class="viz-wire" marker-end="url(#arrow-map-v)"/><text x="215" y="225" class="viz-micro">Target coordinates</text><g data-part="ptz"><rect x="18" y="242" width="364" height="58" rx="8" class="viz-panel"/><text x="32" y="264" class="viz-heading">C++ camera-control service</text><text x="32" y="285" class="viz-subtle">ONVIF / SOAP · WS-Security authentication</text></g><path d="M200 300V322" class="viz-wire" marker-end="url(#arrow-map-v)"/><g data-part="kafka"><rect x="18" y="329" width="364" height="64" rx="8" class="viz-panel"/><text x="32" y="350" class="viz-heading">Kafka commands &amp; device telemetry</text><text x="32" y="373" class="viz-subtle">Thread-safe queues · scheduling · retries</text></g><text x="31" y="417" class="viz-subtle">Pan → tilt → zoom · command + status workflows</text></svg>
+          <figcaption><span>HOW IT FLOWS</span><span class="map-hint">Architecture overview</span></figcaption><svg class="engineering-viz detailed-viz ptz-scene" viewBox="0 0 400 480" role="img" aria-label="A pole-mounted PTZ camera watches a walkway, an upper platform and a road. Selecting a target turns the scene point into normalised coordinates; a C++ ONVIF service signs the command with WS-Security, Kafka queues it by priority, and the camera head pans, tilts and zooms while telemetry reports back.">
+<defs>
+<linearGradient id="pz-cone-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.34"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient>
+<clipPath id="pz-view"><rect x="12" y="34" width="376" height="220" rx="12"/></clipPath>
+<marker id="pz-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--il-line)"/></marker>
+</defs>
+<text x="14" y="22" class="viz-caption">SCENE → AUTHENTICATED COMMAND → CAMERA</text>
+<g class="pz-scene-layer" data-part="ptz">
+<rect x="12" y="34" width="376" height="220" rx="12" class="pz-view"/>
+<g clip-path="url(#pz-view)">
+<path d="M137 34V254M263 34V254M12 107H388M12 180H388" class="pz-grid"/>
+<path d="M236 116H388M244 128V116M268 128V116M316 128V116M340 128V116M364 128V116" class="pz-rail"/>
+<path d="M236 128H388" class="pz-ground"/>
+<path d="M120 198H388" class="pz-ground"/>
+<rect x="110" y="206" width="290" height="40" class="pz-road"/>
+<path d="M118 226H388" class="pz-lane"/>
+<path d="M300 72H330" class="pz-route"/>
+<path d="M212 190H236" class="pz-route"/>
+<path d="M286 242H264" class="pz-route"/>
+<g class="pz-target-shape"><circle cx="196" cy="160" r="5.5" class="pz-person"/><rect x="189" y="168" width="14" height="20" rx="7" class="pz-person"/><path d="M193 186V197M199 186V197" class="pz-leg"/></g>
+<g class="pz-target-shape"><circle cx="300" cy="90" r="5.5" class="pz-person"/><rect x="293" y="98" width="14" height="20" rx="7" class="pz-person"/><path d="M297 116V127M303 116V127" class="pz-leg"/></g>
+<g class="pz-target-shape"><path d="M292 236V226Q292 220 298 220H306L314 211H334L344 220H348Q354 220 354 226V236Z" class="pz-car"/><path d="M316 214H332L339 220H310Z" class="pz-window"/><circle cx="304" cy="237" r="5" class="pz-wheel"/><circle cx="342" cy="237" r="5" class="pz-wheel"/></g>
+<rect x="47" y="150" width="8" height="104" rx="2" class="pz-pole"/>
+<path d="M55 150H64" class="pz-arm"/>
+<g id="ptz-head">
+<path id="ptz-cone" d="M98 150L396 92V208Z" fill="url(#pz-cone-grad)"/>
+<rect x="66" y="137" width="20" height="5" rx="2" class="pz-cam-visor"/>
+<rect x="62" y="141" width="30" height="18" rx="7" class="pz-cam"/>
+<circle cx="94" cy="150" r="6" class="pz-lens"/>
+<circle cx="94" cy="150" r="2.4" class="pz-lens-core"/>
+</g>
+<path d="M22 54V44H32M368 44H378V54M378 234V244H368M32 244H22V234" class="pz-bracket"/>
+<circle cx="38" cy="58" r="3" class="pz-rec"><animate attributeName="opacity" values="1;.2;1" dur="1.6s" repeatCount="indefinite"/></circle>
+<text x="46" y="61" class="viz-micro">LIVE · CAM-01</text>
+<text x="62" y="246" class="viz-micro">PTZ · FIXED MOUNT</text>
+</g>
+<g id="ptz-reticle" transform="translate(196 178)"><path d="M-15 -16V-24H-7M7 -24H15V-16M15 16V24H7M-7 24H-15V16" class="pz-reticle"/><circle r="1.8" class="pz-reticle-dot"/></g>
+<g id="ptz-chip" transform="translate(196 140)"><rect x="-44" y="-9" width="88" height="18" rx="9" class="pz-chip"/><text y="3.2" text-anchor="middle" class="pz-chip-t">x 0.49 · y 0.65</text></g>
+</g>
+<path d="M176 293H223" class="viz-wire pz-link" marker-end="url(#pz-arrow)"/>
+<path d="M309 319V331" class="viz-wire pz-link" marker-end="url(#pz-arrow)"/>
+<path d="M224 361H177" class="viz-wire pz-link" marker-end="url(#pz-arrow)"/>
+<g id="ptz-s1"><rect x="12" y="270" width="158" height="46" rx="11" class="viz-panel"/><circle cx="34" cy="293" r="11" class="pz-num-bg"/><text x="34" y="296.5" text-anchor="middle" class="pz-num">01</text><text x="54" y="290" class="pz-step">Scene point</text><text x="54" y="305" class="pz-step-sub">normalised x, y</text></g>
+<g id="ptz-s2" data-part="ptz"><rect x="230" y="270" width="158" height="46" rx="11" class="viz-panel"/><circle cx="252" cy="293" r="11" class="pz-num-bg"/><text x="252" y="296.5" text-anchor="middle" class="pz-num">02</text><text x="272" y="290" class="pz-step">C++ service</text><text x="272" y="305" class="pz-step-sub">ONVIF · WS-Security</text><path d="M364.5 281.5h8v6.5h-8zM366.3 281.5v-2a2.2 2.2 0 014.4 0v2" class="pz-lock"/></g>
+<g id="ptz-s3" data-part="kafka"><rect x="230" y="338" width="158" height="46" rx="11" class="viz-panel"/><circle cx="252" cy="361" r="11" class="pz-num-bg"/><text x="252" y="364.5" text-anchor="middle" class="pz-num">03</text><text x="272" y="358" class="pz-step">Kafka</text><text x="272" y="373" class="pz-step-sub">priority queue</text><rect x="356" y="349" width="20" height="3" rx="1.5" class="pz-q hi"/><rect x="356" y="354" width="20" height="3" rx="1.5" class="pz-q"/><rect x="356" y="359" width="20" height="3" rx="1.5" class="pz-q"/></g>
+<g id="ptz-s4"><rect x="12" y="338" width="158" height="46" rx="11" class="viz-panel"/><circle cx="34" cy="361" r="11" class="pz-num-bg"/><text x="34" y="364.5" text-anchor="middle" class="pz-num">04</text><text x="54" y="358" class="pz-step">PTZ head</text><text x="54" y="373" class="pz-step-sub">pan · tilt · zoom</text></g>
+<g class="pz-packet-layer"><circle id="ptz-packet" cx="176" cy="293" r="4" class="pz-packet" opacity="0"/></g>
+<g id="ptz-tele" data-part="kafka">
+<rect x="12" y="398" width="376" height="50" rx="10" class="pz-tele"/>
+<path d="M104 408V438M196 408V438M288 408V438" class="pz-div"/>
+<text x="28" y="416" class="viz-micro">PAN</text><text x="28" y="436" id="ptz-pan" class="pz-read">+0.0°</text>
+<text x="120" y="416" class="viz-micro">TILT</text><text x="120" y="436" id="ptz-tilt" class="pz-read">+0.0°</text>
+<text x="212" y="416" class="viz-micro">ZOOM</text><text x="212" y="436" id="ptz-zoom" class="pz-read">1.0×</text>
+<text x="304" y="416" class="viz-micro">STATUS</text><text x="304" y="436" id="ptz-state" class="pz-read pz-state">SCANNING</text>
+</g>
+<text x="14" y="470" class="viz-subtle">Illustrative workflow · Kafka carries commands and device status</text>
+</svg>
+
+
+<div class="ptz-targets" aria-label="Select camera target"><button type="button" data-scene-target="person1" aria-pressed="true">Person 1</button><button type="button" data-scene-target="person2" aria-pressed="false">Person 2</button><button type="button" data-scene-target="car" aria-pressed="false">Vehicle</button></div><div class="ptz-controls" aria-label="Camera control illustration"><button type="button" data-ptz="move">Move to target</button><button type="button" data-ptz="zoom">Zoom in</button><button type="button" data-ptz="stop">Stop</button><button type="button" data-ptz="reset">Reset</button></div><p class="ptz-status" role="status">Pick a target, then send a command. The camera head moves; the mount stays fixed.</p>
         </figure>
         <div class="cards">
           <article class="xcard reveal" tabindex="0" data-parts="ptz">
@@ -535,12 +618,17 @@
     </div>
     <div class="resume-frame reveal">
       <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i><span>Srikanth_Mangipudi_Resume.pdf</span></div>
-      <object data="assets/Srikanth_Mangipudi_Resume.pdf#view=FitH&amp;toolbar=0" type="application/pdf" aria-label="Resume preview">
-        <div class="frame-fallback">
-          <p>Your browser can't preview PDFs here.</p>
-          <a class="btn btn-primary btn-sm" href="assets/Srikanth_Mangipudi_Resume.pdf" target="_blank" rel="noopener">Open resume ↗</a>
-        </div>
-      </object>
+      <div class="pdf-slot" data-pdf="assets/Srikanth_Mangipudi_Resume.pdf#view=FitH&amp;toolbar=0">
+        <div class="pdf-skeleton" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <noscript>
+        <object data="assets/Srikanth_Mangipudi_Resume.pdf#view=FitH&amp;toolbar=0" type="application/pdf" aria-label="Resume preview">
+          <div class="frame-fallback">
+            <p>Your browser can't preview PDFs here.</p>
+            <a class="btn btn-primary btn-sm" href="assets/Srikanth_Mangipudi_Resume.pdf" target="_blank" rel="noopener">Open resume ↗</a>
+          </div>
+        </object>
+        </noscript>
+      </div>
     </div>
   </div>
 </section>
@@ -573,7 +661,7 @@
 
 <footer class="wrap footer">
   <span>© <span id="year">2026</span> Srikanth Mangipudi</span>
-  <span>Built with intent. Shipped with care.</span>
+  <span>Built with intent. Shipped with care.</span><button class="motion-control" id="motion-control" type="button" aria-pressed="false">Pause motion</button>
   <a href="#top">Back to top ↑</a>
 </footer>
 

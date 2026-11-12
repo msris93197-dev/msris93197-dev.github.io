@@ -1,12 +1,16 @@
 # Srikanth Mangipudi — Portfolio
 
-A fast, dependency-free portfolio site (HTML + CSS + vanilla JS). Everything that ships lives in `dist/`.
+A fast portfolio site (HTML + CSS + vanilla JS, with GSAP vendored locally for motion). Everything that ships lives in `dist/`.
 
 ```
 dist/
   index.html        # all content (experience, skills, projects, education, resume, contact)
   style.css         # design tokens, layout, light/dark themes, responsive rules
-  app.js            # mobile menu, active nav, scroll reveals, stat counters, copy email
+  refined.css       # current palette and illustration styles
+  app.js            # theme, mobile menu, active nav, lazy résumé preview, copy email; no-GSAP fallbacks
+  motion.js/.css    # GSAP + ScrollTrigger: intro, text reveals, illustration assembly, scroll polish
+  cursor.js/.css    # GSAP cursor (fine pointers only): trailing ring, snap-to-button, action labels
+  vendor/           # gsap.min.js, ScrollTrigger.min.js (3.13)
   favicon.svg
   assets/
     Srikanth_Mangipudi_Resume.pdf   

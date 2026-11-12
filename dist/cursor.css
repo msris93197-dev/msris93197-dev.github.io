@@ -1,0 +1,60 @@
+/* ==========================================================================
+   Cursor · fine pointers only. The native cursor is hidden only after the
+   custom one is live, and comes back on text fields, the PDF and touch.
+   ========================================================================== */
+.cursor { position: fixed; inset: 0; z-index: 10000; pointer-events: none; opacity: 0; transition: opacity .25s ease; }
+.cursor.is-visible { opacity: 1; }
+.cursor.is-native { opacity: 0; }
+
+.cursor-ring, .cursor-dot { position: absolute; left: 0; top: 0; pointer-events: none; }
+.cursor-ring { --r: 17px; display: grid; place-items: center; }
+.cursor-shape {
+  position: absolute; inset: 0; border-radius: var(--r);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  background: transparent;
+  transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease;
+}
+.cursor-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); transition: opacity .2s ease; }
+
+/* Hovering anything clickable: ring opens up and tints. */
+.cursor.is-hover .cursor-shape { background: color-mix(in srgb, var(--accent) 10%, transparent); border-color: var(--accent); }
+
+/* Snapped around a control: a quiet focus frame, no fill. */
+.cursor.is-stuck .cursor-shape { border-color: color-mix(in srgb, var(--accent) 85%, transparent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+/* Action label: a filled disc that says what the click will do. */
+.cursor-label { position: relative; font: 600 11px/1 "DM Sans", sans-serif; letter-spacing: .02em; color: var(--accent-ink); white-space: nowrap; opacity: 0; transform: scale(.6); transition: opacity .2s ease, transform .35s cubic-bezier(.2, .9, .3, 1.3); }
+.cursor.is-label .cursor-shape { background: var(--accent); border-color: var(--accent); box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
+.cursor.is-label .cursor-label { opacity: 1; transform: none; }
+.cursor.is-label .cursor-dot { opacity: 0; }
+
+/* Hide the system cursor only while the custom one is active. */
+.has-cursor:not(.cursor-native), .has-cursor:not(.cursor-native) * { cursor: none !important; }
+
+/* Card spotlight that follows the pointer. */
+.project, .pillar, .up, .edu { position: relative; isolation: isolate; }
+.project::after, .pillar::after, .up::after, .edu::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .4s ease;
+  background: radial-gradient(280px circle at var(--px, 50%) var(--py, 50%), color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
+}
+.cursor-lit::after { opacity: 1; }
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor { display: none; }
+  .has-cursor, .has-cursor * { cursor: revert !important; }
+  .cursor-lit::after { opacity: 0; }
+}
+
+/* Hint: a small pill beside the pointer, so the card text stays readable. */
+.cursor.is-hint .cursor-shape { background: var(--accent); border-color: var(--accent); }
+.cursor.is-hint .cursor-dot { opacity: 0; }
+.cursor.is-hint .cursor-label {
+  position: absolute; left: calc(100% + 10px); top: 50%; opacity: 1; transform: translateY(-50%);
+  padding: 6px 10px; border-radius: 20px; font-size: 10.5px; color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--line);
+  box-shadow: 0 8px 24px -12px #0006;
+}
+
+/* Over buttons and nav links the ring melts into a small outlined dot. */
+.cursor.is-stuck .cursor-shape { background: var(--accent); border-color: transparent; box-shadow: 0 0 0 2px var(--paper), 0 2px 8px -2px #0006; }
+.cursor.is-stuck .cursor-dot { opacity: 0; }
